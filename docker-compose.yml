@@ -1,0 +1,54 @@
+# AgriMart Docker Compose
+# Note: Supabase is hosted externally, not containerized locally
+# This runs frontend and backend only
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrimart-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=AgriMart API
+      - DEBUG=true
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FRONTEND_URL=http://localhost:5173
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: agrimart-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - VITE_API_URL=http://localhost:8000
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: agrimart-network

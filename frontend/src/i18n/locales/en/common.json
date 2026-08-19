@@ -1,0 +1,48 @@
+{
+  "appName": "AgriMart",
+  "tagline": "Your Agricultural Marketplace",
+  "nav": {
+    "dashboard": "Dashboard",
+    "listings": "My Listings",
+    "orders": "Orders",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "loading": "Loading...",
+    "retry": "Retry"
+  },
+  "status": {
+    "pending": "Pending",
+    "accepted": "Accepted",
+    "dispatched": "Dispatched",
+    "completed": "Completed",
+    "disputed": "Disputed",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "messages": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "noData": "No data available",
+    "networkError": "Network error. Please try again.",
+    "unauthorized": "Please log in to continue"
+  },
+  "form": {
+    "required": "This field is required",
+    "invalidNumber": "Please enter a valid number",
+    "invalidPhone": "Please enter a valid phone number"
+  }
+}
