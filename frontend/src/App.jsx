@@ -6,6 +6,13 @@ import FarmerLayout from './components/FarmerLayout'
 import BuyerLayout from './components/BuyerLayout'
 import AdminLayout from './components/AdminLayout'
 
+// Landing + Auth
+import LandingPage from './pages/auth/LandingPage'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import RoleSelect from './pages/auth/RoleSelect'
+import Verify from './pages/auth/Verify'
+
 // Farmer Pages
 import FarmerDashboard from './pages/farmer/FarmerDashboard'
 import KisanVaniVoiceAction from './pages/farmer/KisanVaniVoiceAction'
@@ -33,19 +40,16 @@ import DisputeResolution from './pages/admin/DisputeResolution'
 import KioskRegistration from './pages/admin/KioskRegistration'
 import FraudDetection from './pages/admin/FraudDetection'
 
-// Auth Pages
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import RoleSelect from './pages/auth/RoleSelect'
-import VerifyPhone from './pages/auth/VerifyPhone'
-
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, profile, loading } = useAuth()
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
+          <p className="text-gray-500 text-sm font-medium">Loading AgriMart...</p>
+        </div>
       </div>
     )
   }
@@ -53,21 +57,53 @@ function ProtectedRoute({ children, allowedRoles }) {
   if (!user) {
     return <Navigate to="/login" replace />
   }
+
+  // If the user is authenticated but has no profile yet, send them to role selection
+  if (user && !profile) {
+    return <Navigate to="/role-select" replace />
+  }
   
   if (allowedRoles && !allowedRoles.includes(profile?.role)) {
+    // If role does not match, redirect to appropriate home
+    if (profile?.role === 'farmer') return <Navigate to="/farmer/dashboard" replace />
+    if (profile?.role === 'buyer') return <Navigate to="/buyer/market" replace />
+    if (profile?.role === 'admin') return <Navigate to="/admin/metrics" replace />
     return <Navigate to="/" replace />
   }
   
   return children
 }
 
+// Root redirect: unauthenticated → landing, authenticated → role dashboard
+function RootRedirect() {
+  const { user, profile, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-10 h-10 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!user) return <LandingPage />
+  if (!profile) return <Navigate to="/role-select" replace />
+  if (profile.role === 'farmer') return <Navigate to="/farmer/dashboard" replace />
+  if (profile.role === 'buyer') return <Navigate to="/buyer/market" replace />
+  if (profile.role === 'admin') return <Navigate to="/admin/metrics" replace />
+  return <LandingPage />
+}
+
 function App() {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* Root: Landing or Dashboard */}
+      <Route path="/" element={<RootRedirect />} />
+
+      {/* Public Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/verify" element={<VerifyPhone />} />
+      <Route path="/verify" element={<Verify />} />
       <Route path="/role-select" element={<RoleSelect />} />
       
       {/* Farmer Routes */}
@@ -78,6 +114,7 @@ function App() {
       }>
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
         <Route path="/farmer/kisan-vani" element={<KisanVaniVoiceAction />} />
+        <Route path="/farmer/voice-action" element={<KisanVaniVoiceAction />} />
         <Route path="/farmer/inventory" element={<InventoryManager />} />
         <Route path="/farmer/create-listing" element={<CreateListing />} />
         <Route path="/farmer/orders" element={<OrderHub />} />
@@ -115,8 +152,7 @@ function App() {
         <Route path="/admin/fraud" element={<FraudDetection />} />
       </Route>
       
-      {/* Default Redirect */}
-      <Route path="/" element={<Navigate to="/farmer/dashboard" replace />} />
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -43,6 +43,35 @@
   "form": {
     "required": "This field is required",
     "invalidNumber": "Please enter a valid number",
-    "invalidPhone": "Please enter a valid phone number"
+    "invalidPhone": "Please enter a valid phone number",
+    "phone": "Phone Number",
+    "password": "Password",
+    "confirmPassword": "Confirm Password"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "signInSubtitle": "Sign in to your account",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account...",
+    "createAccountSubtitle": "Create your account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "register": "Register",
+    "iAm": "I am a",
+    "farmer": "Farmer",
+    "buyer": "Buyer",
+    "sellProduce": "Sell produce",
+    "buyProduce": "Buy produce",
+    "phonePlaceholder": "Enter phone with country code",
+    "passwordPlaceholder": "Enter password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "passwordMinLength": "At least 6 characters",
+    "phoneHint": "Include country code (E.164), e.g. +{{code}}9876543210"
+  },
+  "profile": {
+    "farmer": "Farmer",
+    "buyer": "Buyer",
+    "admin": "Admin"
   }
 }

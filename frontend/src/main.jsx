@@ -7,14 +7,17 @@ import i18n from './i18n'
 import App from './App'
 import './index.css'
 import { AuthProvider } from './hooks/useAuth'
+import { ToastProvider } from './components/ui/Toast'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <I18nextProvider i18n={i18n}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ToastProvider>
       </I18nextProvider>
     </BrowserRouter>
   </React.StrictMode>,

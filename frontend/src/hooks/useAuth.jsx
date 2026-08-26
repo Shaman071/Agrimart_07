@@ -45,25 +45,33 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = async (phone, password, role) => {
-    const cleanedPhone = normalizePhone(phone)
+  const signUp = async (identifier, password, role) => {
+    const isEmail = identifier.includes('@')
+    const payload = isEmail ? { email: identifier, password } : { phone: normalizePhone(identifier), password }
+    
     const res = await supabase.auth.signUp({
-      phone: cleanedPhone,
-      password,
+      ...payload,
       options: {
         data: { role }
       }
     })
     if (res.error) console.error('Supabase signUp error:', res.error, res.data)
+    
+    // Auto sign-in to bypass verification code step
+    if (!res.error) {
+      const signInRes = await supabase.auth.signInWithPassword(payload)
+      if (signInRes.data?.session) {
+        setUser(signInRes.data.session.user)
+      }
+    }
     return res
   }
 
-  const signIn = async (phone, password) => {
-    const cleanedPhone = normalizePhone(phone)
-    const res = await supabase.auth.signInWithPassword({
-      phone: cleanedPhone,
-      password
-    })
+  const signIn = async (identifier, password) => {
+    const isEmail = identifier.includes('@')
+    const payload = isEmail ? { email: identifier, password } : { phone: normalizePhone(identifier), password }
+    
+    const res = await supabase.auth.signInWithPassword(payload)
     if (res.error) console.error('Supabase signIn error:', res.error, res.data)
     return res
   }
@@ -95,14 +103,33 @@ export const AuthProvider = ({ children }) => {
     if (!user) return { error: 'Not authenticated' }
     const table = role === 'farmer' ? 'farmers' : 'buyers'
     const idField = role === 'farmer' ? 'farmer_id' : 'buyer_id'
-    const payload = { [idField]: user.id, ...profileData }
+
+    // Provide minimal required fields for the profile to satisfy NOT NULL constraints
+    const defaults = role === 'farmer'
+      ? { full_name: '', district: '' }
+      : { full_name: '', buyer_type: 'Consumer' }
+
+    const payload = { [idField]: user.id, ...defaults, ...profileData }
+
+    // Ensure a corresponding row exists in public.users (for FK constraints)
+    try {
+      const userUpsert = await supabase.from('users').upsert({ 
+        id: user.id, 
+        phone: user.phone || null, 
+        email: user.email || null,
+        role 
+      }, { onConflict: 'id' }).select()
+      if (userUpsert.error) console.warn('users upsert warning:', userUpsert.error)
+    } catch (e) {
+      console.error('users upsert failed:', e)
+    }
 
     const res = await supabase.from(table).insert(payload).select().single()
     if (res.error) {
       console.error('createProfile error:', res.error)
       // If table missing (404), fallback to a local profile so app can proceed
       if (res.status === 404) {
-        const localProfile = { role, ...profileData }
+        const localProfile = { role, ...defaults, ...profileData }
         setProfile(localProfile)
         return { data: localProfile, error: null }
       }

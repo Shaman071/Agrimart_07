@@ -23,12 +23,12 @@
     "retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"
   },
   "status": {
-    "pending": "ಲಂಬಗ 핵심",
+    "pending": "ಬಾಕಿ",
     "accepted": "ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
-    "dispatched": "প্রേഷಿತ",
+    "dispatched": "ರವಾನಿಸಲಾಗಿದೆ",
     "completed": "ಪೂರ್ಣ",
     "disputed": "ವಿವಾದಿತ",
-    "active": "ಚಾಲನೆಗೆ",
+    "active": "ಸಕ್ರಿಯ",
     "inactive": "ನಿಷ್ಕ್ರಿಯ"
   },
   "messages": {
@@ -37,12 +37,41 @@
     "warning": "ಎಚ್ಚರಿಕೆ",
     "info": "ಮಾಹಿತಿ",
     "noData": "ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ",
-    "networkError": "ನೆಟ್‌ವರ್ಕ್ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।",
+    "networkError": "ನೆಟ್‌ವರ್ಕ್ ದೋಷ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "unauthorized": "ಮುಂದುವರೆಯಲು ಲಾಗ್‌ಇನ್ ಆಗಿ"
   },
   "form": {
-    "required": "ಈ ফೀಲ್ಡ್ ಅಗತ್ಯವಿದೆ",
+    "required": "ಈ ಕ್ಷೇತ್ರ ಅಗತ್ಯವಿದೆ",
     "invalidNumber": "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
-    "invalidPhone": "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಫೋನ್ ನಂಬರ್ಣ納入уп"
+    "invalidPhone": "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ",
+    "phone": "ಫೋನ್ ನಂಬರ್",
+    "password": "ಪಾಸ್‌ವರ್ಡ್",
+    "confirmPassword": "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ"
+  },
+  "auth": {
+    "signIn": "ಸೈನ್ ಇನ್",
+    "signingIn": "ಸೈನ್ ಇನ್ ಆಗುತ್ತಿದೆ...",
+    "signInSubtitle": "ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಆಗಿ",
+    "createAccount": "ಖಾತೆ ರಚಿಸಿ",
+    "creatingAccount": "ಖಾತೆ ರಚಿಸಲಾಗುತ್ತಿದೆ...",
+    "createAccountSubtitle": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ರಚಿಸಿ",
+    "noAccount": "ಖಾತೆ ಇಲ್ಲವೇ?",
+    "hasAccount": "ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?",
+    "register": "ನೋಂದಣಿ",
+    "iAm": "ನಾನು",
+    "farmer": "ರೈತ",
+    "buyer": "ಖರೀದಿದಾರ",
+    "sellProduce": "ಉತ್ಪನ್ನ ಮಾರಾಟ",
+    "buyProduce": "ಉತ್ಪನ್ನ ಖರೀದಿ",
+    "phonePlaceholder": "ದೇಶ ಕೋಡ್ ಸಹಿತ ಫೋನ್ ನಮೂದಿಸಿ",
+    "passwordPlaceholder": "ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+    "confirmPasswordPlaceholder": "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+    "passwordMinLength": "ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳು",
+    "phoneHint": "ದೇಶ ಕೋಡ್ ಸೇರಿಸಿ (E.164), ಉದಾ. +{{code}}9876543210"
+  },
+  "profile": {
+    "farmer": "ರೈತ",
+    "buyer": "ಖರೀದಿದಾರ",
+    "admin": "ನಿರ್ವಾಹಕ"
   }
 }

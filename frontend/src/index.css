@@ -6,8 +6,15 @@
   * {
     @apply border-gray-200;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-gray-50 text-gray-900 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
   }
 }
 
@@ -33,6 +40,12 @@
   .farmer-btn {
     @apply bg-farmer-accent text-white px-6 py-4 rounded-xl font-bold text-farmer-lg shadow-lg hover:bg-yellow-600 transition-all active:scale-95;
   }
+  .buyer-card {
+    @apply bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
+  }
+  .admin-card {
+    @apply bg-gray-800 border border-gray-700 rounded-xl p-6;
+  }
 }
 
 @layer utilities {
@@ -41,6 +54,15 @@
   }
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
   }
 }
 
@@ -59,6 +81,34 @@
   @apply w-3 h-3 bg-green-500 rounded-full animate-pulse;
 }
 
+/* Custom animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
@@ -69,4 +119,16 @@
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

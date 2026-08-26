@@ -10,11 +10,20 @@
     },
     "quickActions": {
       "createListing": "ಲಿಸ್ಟಿಂಗ್ ರಚಿಸಿ",
+      "createListingDesc": "AI ಗ್ರೇಡಿಂಗ್ೊಂದಿಗೆ ಹೊಸ ಬೆಳೆ ಲಿಸ್ಟಿಂಗ್ ಸೇರಿಸಿ",
       "voiceListing": "ಧ್ವನಿ ಲಿಸ್ಟಿಂಗ್ (ಕಿಸನ್‌ವಾಣಿ)",
+      "voiceListingDesc": "ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಮಾತನಾಡಿ ಲಿಸ್ಟಿಂಗ್ ರಚಿಸಿ",
       "cropDoctor": "ಬೆಳೆ ವೈದ್ಯ",
-      "viewOrders": "ಆರ್ಡರ್‌ಗಳನ್ನು ನೋಡಿ"
+      "cropDoctorDesc": "AIರಿಂದ ಬೆಳೆ ರೋಗಗಳ ಗುರುತಿಸಿ",
+      "viewOrders": "ಆರ್ಡರ್‌ಗಳನ್ನು ನೋಡಿ",
+      "viewOrdersDesc": "ನಿಮ್ಮ ಆರ್ಡರ್‌ಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮತ್ತು ನಿರ್ವಹಿಸಿ"
     },
-    "recentActivity": "ಹಾಲಿನ ಚಟುವಟಿಕೆ"
+    "recentActivity": "ಹಾಲಿನ ಚಟುವಟಿಕೆ",
+    "recentOrders": "ಹಾಲಿನ ಆರ್ಡರ್‌ಗಳು",
+    "recentOrdersDesc": "ನಿಮ್ಮ ಲಿಸ್ಟಿಂಗ್‌ಗಳಿಂದ ಸ biodiversité ಆರ್ಡರ್‌ಗಳು",
+    "noRecentOrders": "ಇನ್ನೂ ಯಾವುದೇ ಹೊಸ ಆರ್ಡರ್‌ಗಳು ಇಲ್ಲ",
+    "viewAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
+    "createFirstListing": "ನಿಮ್ಮ ಮೊದಲ ಲಿಸ್ಟಿಂಗ್ ರಚಿಸಿ"
   },
   "kisanVani": {
     "title": "ಕಿಸನ್‌ವಾಣಿ - ಧ್ವನಿ ಲಿಸ್ಟಿಂಗ್",

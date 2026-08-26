@@ -26,8 +26,8 @@ export default function DisputeResolution() {
           orders!inner(
             id, quantity, total_cost, status,
             buyer_id, listing_id,
-            buyers!inner(full_name, phone),
-            produce_listings!inner(crop_type, farmers!inner(full_name, phone))
+            buyers(full_name, phone),
+            produce_listings!inner(crop_type, farmers(full_name, phone))
           ),
           raised_by_user:users!disputes_raised_by_fkey(full_name, phone)
         `)

@@ -10,11 +10,20 @@
     },
     "quickActions": {
       "createListing": "लिस्टिंग बनाएं",
+      "createListingDesc": "AI ग्रेडिंग के साथ नई फसल लिस्टिंग जोड़ें",
       "voiceListing": "आवाज लिस्टिंग (किसानवाणी)",
+      "voiceListingDesc": "अपनी भाषा में बोलकर लिस्टिंग बनाएं",
       "cropDoctor": "फसल डॉक्टर",
-      "viewOrders": "ऑर्डर देखें"
+      "cropDoctorDesc": "AI से फसल रोगों का निदान करें",
+      "viewOrders": "ऑर्डर देखें",
+      "viewOrdersDesc": "अपने ऑर्डर ट्रैक और प्रबंधित करें"
     },
-    "recentActivity": "हाल की गतिविधि"
+    "recentActivity": "हाल की गतिविधि",
+    "recentOrders": "हाल के ऑर्डर",
+    "recentOrdersDesc": "आपकी लिस्टिंग से नवीनतम ऑर्डर",
+    "noRecentOrders": "अभी तक कोई हाल के ऑर्डर नहीं",
+    "viewAll": "सभी देखें",
+    "createFirstListing": "अपनी पहली लिस्टिंग बनाएं"
   },
   "kisanVani": {
     "title": "किसानवाणी - आवाज लिस्टिंग",

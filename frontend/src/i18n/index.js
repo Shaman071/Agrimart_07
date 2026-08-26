@@ -31,6 +31,7 @@ i18n
     lng: 'en',
     fallbackLng: 'en',
     defaultNS: 'common',
+    fallbackNS: 'common',
     ns: ['common', 'farmer'],
     interpolation: {
       escapeValue: false,

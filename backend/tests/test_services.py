@@ -134,8 +134,10 @@ class TestFraudService:
             "device_id": "device-123",
             "ip_address": "192.168.1.1"
         }
-        # Mock the internal method to return high count
-        fraud_service._count_recent_registrations = lambda d, i: 5
+        # Mock the internal method to return high count (async)
+        async def mock_count_recent(d, i):
+            return 5
+        fraud_service._count_recent_registrations = mock_count_recent
         result = await fraud_service.score_account(user)
         assert result.score >= 40
         assert "MULTIPLE_ACCOUNTS_24H" in result.reason_codes

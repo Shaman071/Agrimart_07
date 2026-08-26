@@ -13,5 +13,17 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['lucide-react', 'react-i18next', 'i18next'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    }
   }
 })

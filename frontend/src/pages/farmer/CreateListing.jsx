@@ -1,8 +1,7 @@
 // CreateListing - with AI grading integration
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import { Camera, Loader2, CheckCircle, AlertCircle, X, Image } from 'lucide-react'
@@ -26,8 +25,9 @@ export default function CreateListing() {
   const { t } = useTranslation('farmer')
   const navigate = useNavigate()
   const { user } = useAuth()
-  const params = useParams()
-  const isEditing = !!params.edit
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('edit')
+  const isEditing = !!editId
 
   const [formData, setFormData] = useState({
     crop_type: '',
@@ -47,9 +47,9 @@ export default function CreateListing() {
 
   useEffect(() => {
     if (isEditing) {
-      fetchListing(params.edit)
+      fetchListing(editId)
     }
-  }, [params.edit])
+  }, [editId])
 
   const fetchListing = async (id) => {
     try {
@@ -95,9 +95,9 @@ export default function CreateListing() {
     // Grade
     setGrading(true)
     try {
-      const formData = new FormData()
-      formData.append('crop_type', formData.crop_type || formData.get('crop_type'))
-      formData.append('image', file)
+      const imageFormData = new FormData()
+      imageFormData.append('crop_type', formData.crop_type)
+      imageFormData.append('image', file)
 
       const session = await supabase.auth.getSession()
       const response = await fetch(`${API_BASE}/vision/grade-crop`, {
@@ -105,7 +105,7 @@ export default function CreateListing() {
         headers: {
           'Authorization': `Bearer ${session.data.session?.access_token}`
         },
-        body: formData
+        body: imageFormData
       })
 
       const result = await response.json()
@@ -132,37 +132,34 @@ export default function CreateListing() {
     setSubmitting(true)
 
     try {
-      const session = await supabase.auth.getSession()
       const payload = {
         farmer_id: user.id,
         crop_type: formData.crop_type,
         qty_avail: parseFloat(formData.qty_avail),
+        qty_reserved: 0,
         price: parseFloat(formData.price),
         district: formData.district,
         pooling_enabled: formData.pooling_enabled,
         pooling_threshold: formData.pooling_threshold ? parseFloat(formData.pooling_threshold) : null,
-        ai_grade: formData.ai_grade,
+        ai_grade: formData.ai_grade || null,
         is_active: true,
       }
 
-      const url = isEditing 
-        ? `${API_BASE}/produce_listings/${params.edit}`
-        : `${API_BASE}/produce_listings`
-      const method = isEditing ? 'PATCH' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.data.session?.access_token}`
-        },
-        body: JSON.stringify(payload)
-      })
-
-      if (!response.ok) {
-        const err = await response.json()
-        throw new Error(err.detail || 'Failed to save listing')
+      let error
+      if (isEditing) {
+        const res = await supabase
+          .from('produce_listings')
+          .update(payload)
+          .eq('id', editId)
+        error = res.error
+      } else {
+        const res = await supabase
+          .from('produce_listings')
+          .insert(payload)
+        error = res.error
       }
+
+      if (error) throw error
 
       setSuccess(true)
       setTimeout(() => navigate('/farmer/inventory'), 1500)

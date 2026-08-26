@@ -10,11 +10,20 @@
     },
     "quickActions": {
       "createListing": "Create Listing",
+      "createListingDesc": "Add new crop listing with AI grading",
       "voiceListing": "Voice Listing (KisanVani)",
+      "voiceListingDesc": "Create listing by speaking in your language",
       "cropDoctor": "Crop Doctor",
-      "viewOrders": "View Orders"
+      "cropDoctorDesc": "Diagnose crop diseases with AI",
+      "viewOrders": "View Orders",
+      "viewOrdersDesc": "Track and manage your orders"
     },
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "recentOrders": "Recent Orders",
+    "recentOrdersDesc": "Latest orders from your listings",
+    "noRecentOrders": "No recent orders yet",
+    "viewAll": "View All",
+    "createFirstListing": "Create Your First Listing"
   },
   "kisanVani": {
     "title": "KisanVani - Voice Listing",
@@ -31,7 +40,8 @@
     "confirmListing": "Confirm & Create Listing",
     "tryAgain": "Try Again",
     "supportedLanguages": "Supported: English, Hindi, Kannada",
-    "tips": "Tip: Say crop, quantity, price, and district clearly. Example: 'I have 500 kg tomato at 25 rupees in Bangalore'"
+    "tips": "Tip: Say crop, quantity, price, and district clearly. Example: 'I have 500 kg tomato at 25 rupees in Bangalore'",
+    "selectLanguage": "Select Language"
   },
   "inventory": {
     "title": "Inventory Manager",

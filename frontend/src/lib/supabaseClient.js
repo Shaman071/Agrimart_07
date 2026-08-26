@@ -35,7 +35,7 @@ export const getUserProfile = async (userId) => {
     .from('farmers')
     .select('*')
     .eq('farmer_id', userId)
-    .single()
+    .maybeSingle()
 
   if (!farmerRes.error && farmerRes.data) return { ...farmerRes.data, role: 'farmer' }
 
@@ -44,7 +44,7 @@ export const getUserProfile = async (userId) => {
     .from('buyers')
     .select('*')
     .eq('buyer_id', userId)
-    .single()
+    .maybeSingle()
 
   if (!buyerRes.error && buyerRes.data) return { ...buyerRes.data, role: 'buyer' }
 

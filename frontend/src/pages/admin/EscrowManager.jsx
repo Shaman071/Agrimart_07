@@ -26,8 +26,8 @@ export default function EscrowManager() {
           orders!inner(
             id, quantity, total_cost, status,
             buyer_id, listing_id,
-            buyers!inner(full_name),
-            produce_listings!inner(crop_type, farmers!inner(full_name))
+            buyers(full_name),
+            produce_listings!inner(crop_type, farmers(full_name))
           )
         `)
         .order('created_at', { ascending: false })

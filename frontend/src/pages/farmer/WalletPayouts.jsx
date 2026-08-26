@@ -23,42 +23,55 @@ export default function WalletPayouts() {
     if (!profile?.farmer_id) return
     setLoading(true)
     try {
-      // Get released transactions (completed earnings)
-      const { data: released } = await supabase
-        .from('transactions')
-        .select('amount, created_at, orders!inner(produce_listings!inner(farmer_id))')
-        .eq('status', 'Released')
-        .eq('orders.produce_listings.farmer_id', profile.farmer_id)
+      // Step 1: Get farmer's listing IDs
+      const { data: listings } = await supabase
+        .from('produce_listings')
+        .select('id')
+        .eq('farmer_id', profile.farmer_id)
+      const listingIds = listings?.map(l => l.id) || []
 
-      // Get locked transactions (pending)
-      const { data: locked } = await supabase
-        .from('transactions')
-        .select('amount, created_at, orders!inner(produce_listings!inner(farmer_id))')
-        .eq('status', 'Locked')
-        .eq('orders.produce_listings.farmer_id', profile.farmer_id)
+      let balance = 0
+      let pending = 0
+      let allTxns = []
 
-      const balance = released?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
-      const pending = locked?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
-      const totalEarned = balance + pending
+      if (listingIds.length > 0) {
+        // Step 2: Get order IDs for those listings
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('id')
+          .in('listing_id', listingIds)
+        const orderIds = orders?.map(o => o.id) || []
 
-      setWallet({ balance, pending, totalEarned })
+        if (orderIds.length > 0) {
+          // Step 3: Get released transactions
+          const { data: released } = await supabase
+            .from('transactions')
+            .select('amount')
+            .eq('status', 'Released')
+            .in('order_id', orderIds)
+          balance = released?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
-      // Fetch all transactions for history
-      const { data: allTxns } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          orders!inner(
-            id,
-            total_cost,
-            produce_listings!inner(crop_type, farmer_id)
-          )
-        `)
-        .eq('orders.produce_listings.farmer_id', profile.farmer_id)
-        .order('created_at', { ascending: false })
-        .limit(50)
+          // Step 4: Get locked (escrow) transactions
+          const { data: locked } = await supabase
+            .from('transactions')
+            .select('amount')
+            .eq('status', 'Locked')
+            .in('order_id', orderIds)
+          pending = locked?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
-      setTransactions(allTxns || [])
+          // Step 5: Get all transactions for history with join
+          const { data: txns } = await supabase
+            .from('transactions')
+            .select(`*, orders!inner(id, total_cost, produce_listings!inner(crop_type))`)
+            .in('order_id', orderIds)
+            .order('created_at', { ascending: false })
+            .limit(50)
+          allTxns = txns || []
+        }
+      }
+
+      setWallet({ balance, pending, totalEarned: balance + pending })
+      setTransactions(allTxns)
     } catch (err) {
       console.error('Failed to fetch wallet:', err)
     } finally {

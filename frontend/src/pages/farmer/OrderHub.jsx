@@ -44,7 +44,7 @@ export default function OrderHub() {
         .from('orders')
         .select(`
           *,
-          buyers!inner(full_name, buyer_type, address),
+          buyers(full_name, buyer_type, address),
           produce_listings!inner(crop_type, price)
         `)
         .in('listing_id', listingIds)

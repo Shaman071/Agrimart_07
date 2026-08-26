@@ -43,6 +43,35 @@
   "form": {
     "required": "यह फ़ील्ड आवश्यक है",
     "invalidNumber": "कृपया एक वैध संख्या दर्ज करें",
-    "invalidPhone": "कृपया एक वैध फोन नंबर दर्ज करें"
+    "invalidPhone": "कृपया एक वैध फोन नंबर दर्ज करें",
+    "phone": "फोन नंबर",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें"
+  },
+  "auth": {
+    "signIn": "साइन इन करें",
+    "signingIn": "साइन इन हो रहा है...",
+    "signInSubtitle": "अपने खाते में साइन इन करें",
+    "createAccount": "खाता बनाएं",
+    "creatingAccount": "खाता बना रहे हैं...",
+    "createAccountSubtitle": "अपना खाता बनाएं",
+    "noAccount": "खाता नहीं है?",
+    "hasAccount": "पहले से खाता है?",
+    "register": "रजिस्टर करें",
+    "iAm": "मैं हूँ",
+    "farmer": "किसान",
+    "buyer": "खरीदार",
+    "sellProduce": "उपज बेचें",
+    "buyProduce": "उपज खरीदें",
+    "phonePlaceholder": "देश कोड के साथ फोन दर्ज करें",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "confirmPasswordPlaceholder": "पासवर्ड की पुष्टि करें",
+    "passwordMinLength": "कम से कम 6 अक्षर",
+    "phoneHint": "देश कोड शामिल करें (E.164), उदा. +{{code}}9876543210"
+  },
+  "profile": {
+    "farmer": "किसान",
+    "buyer": "खरीदार",
+    "admin": "व्यवस्थापक"
   }
 }

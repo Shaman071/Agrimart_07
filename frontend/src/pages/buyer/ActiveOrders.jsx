@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import { Loader2, Package, Truck, MapPin, Clock, CheckCircle, AlertCircle, Eye, User, Calendar } from 'lucide-react'
+import { getCropImage } from '../../lib/cropImages'
 
 const STATUS_ORDER = ['Pending', 'Accepted', 'Dispatched', 'Completed', 'Disputed']
 const STATUS_ICONS = {
@@ -49,7 +50,7 @@ export default function ActiveOrders() {
         .from('orders')
         .select(`
           *,
-          produce_listings!inner(crop_type, price, farmers!inner(full_name, district)),
+          produce_listings!inner(crop_type, price, farmers(full_name, district)),
           transports(driver, plate_num, dispatch)
         `)
         .eq('buyer_id', profile.buyer_id)
@@ -113,13 +114,11 @@ export default function ActiveOrders() {
               <div key={order.id} className="card" onClick={() => setSelectedOrder(order)}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-                      <Package className="w-6 h-6 text-primary-600" />
-                    </div>
+                    <img src={getCropImage(listing.crop_type)} alt={listing.crop_type} className="w-14 h-14 rounded-xl object-cover border" />
                     <div>
-                      <p className="font-semibold text-gray-900">{listing.crop_type}</p>
+                      <p className="font-bold text-gray-900">{listing.crop_type}</p>
                       <p className="text-sm text-gray-500">
-                        {order.quantity} kg • ₹{order.total_cost} • {farmer.full_name}
+                        {order.quantity} kg • ₹{order.total_cost} • {farmer?.full_name || 'Verified Kisan'}
                       </p>
                     </div>
                   </div>
