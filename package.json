@@ -1,5 +1,16 @@
 {
+  "name": "agrimart",
+  "version": "1.0.0",
+  "description": "Direct B2B/B2C Agricultural Marketplace",
+  "scripts": {
+    "health": "node check-health.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload",
+    "install:all": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+    "test": "node check-health.js"
+  },
   "dependencies": {
     "supabase": "^2.115.0"
   }
 }
+

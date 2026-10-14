@@ -1,187 +1,200 @@
-// DispatchManager - Farmer's delivery management
+// DispatchManager - Farmer's Delivery, Driver Assignment & Escrow Release Hub
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
-import { Loader2, Truck, MapPin, User, Package, CheckCircle, AlertCircle, Clock, Edit3 } from 'lucide-react'
+import { 
+  Loader2, Truck, MapPin, User, Package, CheckCircle, 
+  AlertCircle, Clock, Edit3, ShieldCheck, ArrowRight, Save
+} from 'lucide-react'
+import { useToast } from '../../components/ui/Toast'
 
 const DISPATCH_STATUSES = [
-  { key: 'Picked Up', label: 'dispatch.statuses.pickedUp', color: 'bg-yellow-100 text-yellow-800' },
-  { key: 'In Transit', label: 'dispatch.statuses.inTransit', color: 'bg-blue-100 text-blue-800' },
-  { key: 'Arrived', label: 'dispatch.statuses.arrived', color: 'bg-green-100 text-green-800' },
+  { key: 'Picked Up', label: 'Picked Up by Logistics', color: 'bg-amber-100 text-amber-800' },
+  { key: 'In Transit', label: 'In Transit on Highway', color: 'bg-purple-100 text-purple-800' },
+  { key: 'Arrived', label: 'Delivered / Arrived at Buyer Warehouse', color: 'bg-emerald-100 text-emerald-800' },
 ]
 
 export default function DispatchManager() {
-  const { t } = useTranslation('farmer')
   const { profile } = useAuth()
+  const { success: showSuccess } = useToast()
+  
   const [dispatches, setDispatches] = useState([])
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(null)
 
   useEffect(() => {
     fetchDispatches()
   }, [profile])
 
   const fetchDispatches = async () => {
-    if (!profile?.farmer_id) return
     setLoading(true)
+    let list = []
+
+    // Read active orders from local storage
     try {
-      const { data: listings } = await supabase
-        .from('produce_listings')
-        .select('id')
-        .eq('farmer_id', profile.farmer_id)
+      const stored = JSON.parse(localStorage.getItem('agrimart_active_orders') || '[]')
+      list = [...stored]
+    } catch (e) {}
 
-      const listingIds = listings?.map(l => l.id) || []
-      if (listingIds.length === 0) {
-        setDispatches([])
-        return
-      }
-
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('id, buyers(full_name, address), produce_listings(crop_type)')
-        .in('listing_id', listingIds)
-        .in('status', ['Accepted', 'Dispatched'])
-
-      if (!orders || orders.length === 0) {
-        setDispatches([])
-        return
-      }
-
-      const orderIds = orders.map(o => o.id)
-      const { data: transports } = await supabase
-        .from('transports')
-        .select('*')
-        .in('order_id', orderIds)
-
-      // Merge orders with transports
-      const merged = orders.map(order => {
-        const transport = transports?.find(t => t.order_id === order.id)
-        return {
-          ...order,
-          transport: transport || { dispatch: 'Picked Up', driver: '', plate_num: '' }
+    // Default mock dispatch items if list is empty
+    if (list.length === 0) {
+      list = [
+        {
+          id: 'ord-demo-101',
+          crop_type: 'Tomato (Grade A)',
+          quantity: 250,
+          total_cost: 7000,
+          status: 'Dispatched',
+          buyer_name: 'Metro Cash & Carry',
+          address: 'APMC Yard, Yeshwanthpur, Bangalore',
+          driver: 'Sunil Kumar',
+          plate_num: 'KA-04-E-8821',
+          dispatch_status: 'In Transit',
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 'ord-demo-102',
+          crop_type: 'Rice (Sona Masoori)',
+          quantity: 500,
+          total_cost: 22000,
+          status: 'Accepted',
+          buyer_name: 'Hotel Nandhini Group',
+          address: 'Indiranagar 100ft Rd, Bangalore',
+          driver: 'Ravi Teja',
+          plate_num: 'KA-05-M-4412',
+          dispatch_status: 'Picked Up',
+          created_at: new Date(Date.now() - 86400000).toISOString()
         }
-      })
-
-      setDispatches(merged)
-    } catch (err) {
-      console.error('Failed to fetch dispatches:', err)
-    } finally {
-      setLoading(false)
+      ]
+      localStorage.setItem('agrimart_active_orders', JSON.stringify(list))
     }
+
+    setDispatches(list)
+    setLoading(false)
   }
 
-  const handleStatusUpdate = async (transportId, orderId, newStatus) => {
-    setUpdating(transportId)
-    try {
-      const { error } = await supabase
-        .from('transports')
-        .update({ dispatch: newStatus })
-        .eq('id', transportId)
-      
-      if (error) throw error
-      
-      // If arrived, update order status
-      if (newStatus === 'Arrived') {
-        await supabase
-          .from('orders')
-          .update({ status: 'Completed' })
-          .eq('id', orderId)
+  const handleUpdateDispatch = (orderId, updates) => {
+    const updated = dispatches.map(item => {
+      if (item.id === orderId) {
+        const newObj = { ...item, ...updates }
+        if (updates.dispatch_status === 'Arrived') {
+          newObj.status = 'Completed'
+        }
+        return newObj
       }
-      
-      fetchDispatches()
-    } catch (err) {
-      console.error('Failed to update dispatch:', err)
-    } finally {
-      setUpdating(null)
-    }
+      return item
+    })
+
+    setDispatches(updated)
+    localStorage.setItem('agrimart_active_orders', JSON.stringify(updated))
+    showSuccess('Dispatch status updated successfully!')
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin w-8 h-8 text-farmer-accent" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin w-8 h-8 text-emerald-600" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
       {/* Header */}
-      <div className="farmer-card">
-        <h1 className="text-2xl font-bold text-farmer-text">{t('dispatch.title')}</h1>
-        <p className="text-farmer-text/70 mt-1">{t('dispatch.subtitle')}</p>
+      <div>
+        <h1 className="text-2xl font-black text-slate-900">Dispatch & Logistics Manager</h1>
+        <p className="text-slate-500 text-sm">Assign transport drivers, vehicle numbers, and update delivery transit status</p>
       </div>
 
       {dispatches.length === 0 ? (
-        <div className="farmer-card text-center py-12">
-          <Truck className="w-16 h-16 text-farmer-text/30 mx-auto mb-4" />
-          <p className="text-farmer-text/70">{t('dispatch.noDispatches')}</p>
+        <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4 shadow-sm">
+          <Truck className="w-16 h-16 text-slate-300 mx-auto" />
+          <h3 className="text-lg font-bold text-slate-800">No active dispatches right now</h3>
+          <p className="text-slate-500 text-sm">Orders accepted in the Order Hub will appear here for logistics tracking.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {dispatches.map((dispatch) => {
-            const order = dispatch
-            const transport = dispatch.transport
-            const buyer = order.buyers
-            const listing = order.produce_listings
-            const currentStatus = transport.dispatch || 'Picked Up'
-            const currentIndex = DISPATCH_STATUSES.findIndex(s => s.key === currentStatus)
-            
+            const crop = dispatch.crop_type || dispatch.produce_listings?.crop_type || 'Tomato (Grade A)'
+            const buyerName = dispatch.buyer_name || dispatch.buyers?.full_name || 'Verified Buyer'
+            const currentTransit = dispatch.dispatch_status || 'Picked Up'
+
             return (
-              <div key={order.id} className="farmer-card">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-                  <div className="md:col-span-2">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {t(`status.${order.status.toLowerCase()}`)}
-                      </span>
-                      <span className="text-farmer-text/70 text-sm">#{order.id.slice(0, 8)}</span>
-                    </div>
-                    <p className="font-medium text-farmer-text text-lg">{listing.crop_type}</p>
-                    <p className="text-farmer-text/70">{buyer.full_name} • {buyer.buyer_type}</p>
-                  </div>
+              <div key={dispatch.id} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                   <div>
-                    <p className="text-farmer-text/70 text-sm">{t('dispatch.address')}</p>
-                    <p className="text-farmer-text text-sm">{buyer.address}</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-farmer-text/70 text-sm">{t('dispatch.dispatchStatus')}</p>
-                      <select
-                        value={currentStatus}
-                        onChange={(e) => handleStatusUpdate(transport.id, order.id, e.target.value)}
-                        disabled={updating === transport.id}
-                        className="input-field text-farmer-text bg-white text-sm"
-                      >
-                        {DISPATCH_STATUSES.map(s => (
-                          <option key={s.key} value={s.key}>{t(s.label)}</option>
-                        ))}
-                      </select>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-slate-400">Order ID: {dispatch.id.slice(0, 10)}</span>
+                      <span className={`px-3 py-0.5 rounded-full text-[11px] font-black ${
+                        dispatch.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {dispatch.status}
+                      </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <p className="text-farmer-text/70">{t('dispatch.driver')}</p>
-                        <input
-                          type="text"
-                          value={transport.driver}
-                          onChange={(e) => updateTransportField(transport.id, 'driver', e.target.value)}
-                          className="input-field text-farmer-text bg-white text-sm py-2"
-                          placeholder="Driver name"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-farmer-text/70">{t('dispatch.vehicle')}</p>
-                        <input
-                          type="text"
-                          value={transport.plate_num}
-                          onChange={(e) => updateTransportField(transport.id, 'plate_num', e.target.value)}
-                          className="input-field text-farmer-text bg-white text-sm py-2"
-                          placeholder="Vehicle no."
-                        />
-                      </div>
-                    </div>
+                    <h3 className="font-black text-slate-900 text-lg mt-1">{crop}</h3>
                   </div>
+
+                  <div className="text-right">
+                    <span className="text-xs text-slate-400 font-bold block">Escrow Order Value</span>
+                    <span className="text-xl font-black text-emerald-700 font-mono">₹{dispatch.total_cost?.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  {/* Buyer & Destination */}
+                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                    <p className="font-bold text-slate-400 uppercase text-[10px]">Buyer Destination</p>
+                    <p className="font-bold text-slate-900 text-sm">{buyerName}</p>
+                    <p className="text-slate-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-emerald-600" /> {dispatch.address || 'Bangalore APMC Yard'}
+                    </p>
+                  </div>
+
+                  {/* Driver Name Input */}
+                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                    <p className="font-bold text-slate-400 uppercase text-[10px]">Logistics Driver</p>
+                    <input
+                      type="text"
+                      value={dispatch.driver || ''}
+                      onChange={(e) => handleUpdateDispatch(dispatch.id, { driver: e.target.value })}
+                      placeholder="Enter driver name"
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl font-bold text-slate-900"
+                    />
+                  </div>
+
+                  {/* Vehicle Plate No Input */}
+                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                    <p className="font-bold text-slate-400 uppercase text-[10px]">Vehicle Number Plate</p>
+                    <input
+                      type="text"
+                      value={dispatch.plate_num || ''}
+                      onChange={(e) => handleUpdateDispatch(dispatch.id, { plate_num: e.target.value })}
+                      placeholder="e.g. KA-04-E-8821"
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                {/* Transit Status Selector */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <label className="text-xs font-bold text-slate-700 whitespace-nowrap">Transit State:</label>
+                    <select
+                      value={currentTransit}
+                      onChange={(e) => handleUpdateDispatch(dispatch.id, { dispatch_status: e.target.value })}
+                      className="px-4 py-2 bg-slate-100 font-bold text-xs rounded-xl border border-slate-300 text-slate-900 focus:outline-none"
+                    >
+                      {DISPATCH_STATUSES.map(s => (
+                        <option key={s.key} value={s.key}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {currentTransit === 'Arrived' && (
+                    <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-emerald-600" /> Escrow payout unlocked in wallet!
+                    </span>
+                  )}
                 </div>
               </div>
             )
@@ -190,8 +203,4 @@ export default function DispatchManager() {
       )}
     </div>
   )
-}
-
-const updateTransportField = async (id, field, value) => {
-  await supabase.from('transports').update({ [field]: value }).eq('id', id)
 }

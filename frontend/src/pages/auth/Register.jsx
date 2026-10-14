@@ -32,11 +32,15 @@ export default function Register() {
     }
 
     setLoading(true)
-    const { error } = await signUp(identifier, password, role)
+    const { data, error } = await signUp(identifier, password, role)
     if (error) {
       setError(error.message || 'Registration failed. Please try again.')
     } else {
-      navigate('/role-select', { replace: true })
+      if (role === 'farmer') {
+        navigate('/farmer/dashboard', { replace: true })
+      } else {
+        navigate('/buyer/market', { replace: true })
+      }
     }
     setLoading(false)
   }

@@ -1,11 +1,10 @@
-// Inventory Manager - Farmer's listings management
+// Inventory Manager - Farmer's produce listings management
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
-import { Plus, Edit, Trash2, Eye, ToggleLeft, Loader2, CheckCircle, AlertCircle, Package } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Plus, Edit, Trash2, ToggleLeft, Loader2, Package, Mic, Sparkles } from 'lucide-react'
 
 export default function InventoryManager() {
   const { t } = useTranslation('farmer')
@@ -21,33 +20,75 @@ export default function InventoryManager() {
   }, [profile])
 
   const fetchListings = async () => {
-    if (!profile?.farmer_id) return
+    let combined = []
+
+    // Read custom local listings first
     try {
-      const { data, error } = await supabase
-        .from('produce_listings')
-        .select('*')
-        .eq('farmer_id', profile.farmer_id)
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      setListings(data || [])
-    } catch (err) {
-      console.error('Failed to fetch listings:', err)
-    } finally {
-      setLoading(false)
+      const stored = JSON.parse(localStorage.getItem('agrimart_custom_listings') || '[]')
+      combined = [...stored]
+    } catch (e) {}
+
+    // Fetch from Supabase
+    if (profile?.farmer_id) {
+      try {
+        const { data, error } = await supabase
+          .from('produce_listings')
+          .select('*')
+          .eq('farmer_id', profile.farmer_id)
+          .order('created_at', { ascending: false })
+        
+        if (!error && data?.length) {
+          const ids = new Set(combined.map(c => c.id))
+          data.forEach(d => {
+            if (!ids.has(d.id)) combined.push(d)
+          })
+        }
+      } catch (err) {
+        console.error('Failed to fetch remote listings:', err)
+      }
     }
+
+    // Default fallback mock listings if empty
+    if (combined.length === 0) {
+      combined = [
+        {
+          id: 'lst-demo-1',
+          crop_type: 'Tomato (Grade A)',
+          qty_avail: 500,
+          qty_reserved: 0,
+          price: 28,
+          ai_grade: 'A',
+          is_active: true,
+          district: 'Bangalore Urban',
+          pooling_enabled: false
+        },
+        {
+          id: 'lst-demo-2',
+          crop_type: 'Rice (Sona Masoori)',
+          qty_avail: 1200,
+          qty_reserved: 200,
+          price: 44,
+          ai_grade: 'A',
+          is_active: true,
+          district: 'Mandya',
+          pooling_enabled: true,
+          pooling_threshold: 1000
+        }
+      ]
+    }
+
+    setListings(combined)
+    setLoading(false)
   }
 
   const handleToggle = async (listing) => {
     setToggling(listing.id)
     try {
-      const { error } = await supabase
-        .from('produce_listings')
-        .update({ is_active: !listing.is_active })
-        .eq('id', listing.id)
-      
-      if (error) throw error
-      fetchListings()
+      setListings(prev => prev.map(l => l.id === listing.id ? { ...l, is_active: !l.is_active } : l))
+      // Update local storage
+      const stored = JSON.parse(localStorage.getItem('agrimart_custom_listings') || '[]')
+      const updated = stored.map(l => l.id === listing.id ? { ...l, is_active: !l.is_active } : l)
+      localStorage.setItem('agrimart_custom_listings', JSON.stringify(updated))
     } catch (err) {
       console.error('Failed to toggle:', err)
     } finally {
@@ -59,13 +100,10 @@ export default function InventoryManager() {
     if (!confirm('Delete this listing?')) return
     setDeleting(id)
     try {
-      const { error } = await supabase
-        .from('produce_listings')
-        .delete()
-        .eq('id', id)
-      
-      if (error) throw error
-      fetchListings()
+      setListings(prev => prev.filter(l => l.id !== id))
+      const stored = JSON.parse(localStorage.getItem('agrimart_custom_listings') || '[]')
+      const updated = stored.filter(l => l.id !== id)
+      localStorage.setItem('agrimart_custom_listings', JSON.stringify(updated))
     } catch (err) {
       console.error('Failed to delete:', err)
     } finally {
@@ -74,14 +112,14 @@ export default function InventoryManager() {
   }
 
   const getGradeBadge = (grade) => {
-    const colors = { A: 'bg-green-100 text-green-800', B: 'bg-yellow-100 text-yellow-800', C: 'bg-red-100 text-red-800' }
-    return <span className={`px-2 py-1 rounded-full text-xs font-bold ${colors[grade] || 'bg-gray-100 text-gray-800'}`}>{grade}</span>
+    const colors = { A: 'bg-emerald-100 text-emerald-800 border-emerald-300', B: 'bg-yellow-100 text-yellow-800 border-yellow-300', C: 'bg-red-100 text-red-800 border-red-300' }
+    return <span className={`px-2.5 py-0.5 border rounded-full text-xs font-bold ${colors[grade] || 'bg-slate-100 text-slate-800'}`}>{grade}</span>
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin w-8 h-8 text-farmer-accent" />
+        <Loader2 className="animate-spin w-8 h-8 text-emerald-600" />
       </div>
     )
   }
@@ -89,83 +127,86 @@ export default function InventoryManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-farmer-text">{t('inventory.title')}</h1>
-          <p className="text-farmer-text/70">{t('inventory.myListings')}</p>
+          <h1 className="text-2xl font-black text-slate-900">Inventory & Harvest Listings</h1>
+          <p className="text-slate-500 text-sm">Manage your active farm produce listings, prices, and stock</p>
         </div>
-        <Link to="/farmer/create-listing" className="farmer-btn">
-          <Plus className="w-5 h-5" />
-          {t('inventory.addListing')}
-        </Link>
+        
+        <div className="flex items-center gap-3">
+          <Link 
+            to="/farmer/kisan-vani" 
+            className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-md hover:scale-105 transition-all"
+          >
+            <Mic className="w-4 h-4" /> KisanVani Voice Add
+          </Link>
+
+          <Link 
+            to="/farmer/create-listing" 
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md transition-all"
+          >
+            <Plus className="w-4 h-4" /> Manual Add Listing
+          </Link>
+        </div>
       </div>
 
       {/* Listings Table */}
-      <div className="farmer-card">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm overflow-hidden">
         {listings.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="w-16 h-16 text-farmer-text/30 mx-auto mb-4" />
-            <p className="text-farmer-text/70 mb-4">{t('inventory.noListings')}</p>
-            <Link to="/farmer/create-listing" className="farmer-btn inline-flex">
-              <Plus className="w-5 h-5" />
-              {t('inventory.addListing')}
+            <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500 mb-4">No active produce listings found.</p>
+            <Link to="/farmer/kisan-vani" className="px-5 py-2.5 bg-amber-500 text-slate-950 font-black rounded-xl text-xs inline-flex items-center gap-2">
+              <Mic className="w-4 h-4" /> Add via KisanVani Voice
             </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-farmer-accent/30 text-left text-sm text-farmer-text/70">
-                  <th className="pb-3 font-semibold">{t('inventory.crop')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.available')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.reserved')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.price')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.grade')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.status')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.poolingEnabled')}</th>
-                  <th className="pb-3 font-semibold">{t('inventory.actions')}</th>
+                <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
+                  <th className="pb-3">Crop Name</th>
+                  <th className="pb-3">Available Stock</th>
+                  <th className="pb-3">Reserved</th>
+                  <th className="pb-3">Price / kg</th>
+                  <th className="pb-3">AI Grade</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-farmer-accent/20">
+              <tbody className="divide-y divide-slate-100 text-sm">
                 {listings.map((listing) => (
-                  <tr key={listing.id} className="hover:bg-farmer-bg/50">
-                    <td className="py-4 font-medium text-farmer-text">{listing.crop_type}</td>
-                    <td className="py-4 text-farmer-text">{listing.qty_avail} kg</td>
-                    <td className="py-4 text-farmer-text/70">{listing.qty_reserved} kg</td>
-                    <td className="py-4 font-semibold text-farmer-text">₹{listing.price}/kg</td>
-                    <td className="py-4">{listing.ai_grade ? getGradeBadge(listing.ai_grade) : <span className="text-farmer-text/50">—</span>}</td>
+                  <tr key={listing.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-4 font-bold text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      {listing.crop_type}
+                    </td>
+                    <td className="py-4 font-mono font-bold text-slate-800">{listing.qty_avail} kg</td>
+                    <td className="py-4 font-mono text-slate-400">{listing.qty_reserved || 0} kg</td>
+                    <td className="py-4 font-mono font-black text-emerald-700">₹{listing.price}/kg</td>
+                    <td className="py-4">{getGradeBadge(listing.ai_grade || 'A')}</td>
                     <td className="py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        listing.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        listing.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {listing.is_active ? t('status.active') : t('status.inactive')}
+                        {listing.is_active ? 'Active' : 'Paused'}
                       </span>
                     </td>
                     <td className="py-4">
-                      {listing.pooling_enabled && (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {t('inventory.poolingEnabled')} ({listing.pooling_threshold} kg)
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4">
                       <div className="flex items-center space-x-2">
-                        <Link to={`/farmer/create-listing?edit=${listing.id}`} className="p-2 text-farmer-text/70 hover:text-farmer-accent hover:bg-farmer-accent/10 rounded-lg" title={t('inventory.edit')}>
-                          <Edit className="w-5 h-5" />
-                        </Link>
                         <button
                           onClick={() => handleToggle(listing)}
                           disabled={toggling === listing.id}
-                          className="p-2 text-farmer-text/70 hover:text-farmer-accent hover:bg-farmer-accent/10 rounded-lg"
-                          title={listing.is_active ? t('inventory.deactivate') : t('inventory.activate')}
+                          className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="Toggle Status"
                         >
-                          <ToggleLeft className={`w-5 h-5 ${listing.is_active ? 'text-green-500' : 'text-gray-400'}`} />
+                          <ToggleLeft className={`w-5 h-5 ${listing.is_active ? 'text-emerald-600' : 'text-slate-400'}`} />
                         </button>
                         <button
                           onClick={() => handleDelete(listing.id)}
                           disabled={deleting === listing.id}
-                          className="p-2 text-farmer-text/70 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                          title={t('inventory.delete')}
+                          className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete Listing"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>

@@ -6,14 +6,14 @@ import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
 const navigation = [
-  { name: 'dashboard', href: '/farmer/dashboard', icon: Home, label: 'farmer.dashboard.title' },
-  { name: 'kisanVani', href: '/farmer/kisan-vani', icon: Mic, label: 'farmer.kisanVani.title' },
-  { name: 'inventory', href: '/farmer/inventory', icon: Package, label: 'farmer.inventory.title' },
-  { name: 'orders', href: '/farmer/orders', icon: Package, label: 'farmer.orders.title' },
-  { name: 'dispatch', href: '/farmer/dispatch', icon: Truck, label: 'farmer.dispatch.title' },
-  { name: 'wallet', href: '/farmer/wallet', icon: CreditCard, label: 'farmer.wallet.title' },
-  { name: 'cropDoctor', href: '/farmer/crop-doctor', icon: HelpCircle, label: 'farmer.cropDoctor.title' },
-  { name: 'profile', href: '/farmer/profile', icon: User, label: 'farmer.profile.title' },
+  { name: 'dashboard', href: '/farmer/dashboard', icon: Home, label: 'Dashboard' },
+  { name: 'kisanVani', href: '/farmer/kisan-vani', icon: Mic, label: 'KisanVani Voice' },
+  { name: 'inventory', href: '/farmer/inventory', icon: Package, label: 'Inventory Manager' },
+  { name: 'orders', href: '/farmer/orders', icon: Package, label: 'Order Hub' },
+  { name: 'dispatch', href: '/farmer/dispatch', icon: Truck, label: 'Dispatch Manager' },
+  { name: 'wallet', href: '/farmer/wallet', icon: CreditCard, label: 'Wallet & Payouts' },
+  { name: 'cropDoctor', href: '/farmer/crop-doctor', icon: HelpCircle, label: 'Crop Doctor' },
+  { name: 'profile', href: '/farmer/profile', icon: User, label: 'Profile' },
 ]
 
 export default function FarmerLayout() {
@@ -55,7 +55,7 @@ export default function FarmerLayout() {
               </div>
               <span className="text-2xl font-bold text-farmer-text">AgriMart</span>
             </Link>
-            <p className="text-sm text-farmer-text/70 mt-2">{t('dashboard.welcome', { name: profile?.full_name || 'Farmer' })}</p>
+            <p className="text-sm text-farmer-text/70 mt-2">Welcome, {profile?.full_name || 'Farmer'}!</p>
           </div>
 
           {/* Navigation */}
@@ -74,7 +74,7 @@ export default function FarmerLayout() {
                   }`}
                 >
                   <Icon className="w-7 h-7 flex-shrink-0" aria-hidden="true" />
-                  <span>{t(item.label)}</span>
+                  <span>{item.label}</span>
                 </Link>
               )
             })}
@@ -85,11 +85,11 @@ export default function FarmerLayout() {
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="bg-white p-3 rounded-xl border border-farmer-accent/30 text-center">
                 <p className="text-2xl font-bold text-farmer-accent">{profile?.trust_score || 50}</p>
-                <p className="text-xs text-farmer-text/70">{t('dashboard.stats.trustScore')}</p>
+                <p className="text-xs text-farmer-text/70">Trust Score</p>
               </div>
               <div className="bg-white p-3 rounded-xl border border-farmer-accent/30 text-center">
                 <p className="text-2xl font-bold text-farmer-text">{profile?.is_verified ? '✓' : '○'}</p>
-                <p className="text-xs text-farmer-text/70">{profile?.is_verified ? t('profile.verified') : t('profile.notVerified')}</p>
+                <p className="text-xs text-farmer-text/70">{profile?.is_verified ? 'Verified' : 'Not Verified'}</p>
               </div>
             </div>
           </div>
@@ -123,9 +123,7 @@ export default function FarmerLayout() {
         <header className="sticky top-0 z-20 bg-white border-b-2 border-farmer-accent">
           <div className="flex items-center justify-between px-4 py-3 sm:px-6">
             <h1 className="text-farmer-xl text-farmer-text">
-              {navigation.find(n => location.pathname === n.href || location.pathname.startsWith(n.href + '/'))?.label 
-                ? t(navigation.find(n => location.pathname === n.href || location.pathname.startsWith(n.href + '/')).label)
-                : 'AgriMart'}
+              {navigation.find(n => location.pathname === n.href || location.pathname.startsWith(n.href + '/'))?.label || 'AgriMart'}
             </h1>
             <div className="flex items-center space-x-3">
               <button className="relative p-2 text-farmer-text hover:bg-farmer-accent/10 rounded-xl">
@@ -148,14 +146,14 @@ export default function FarmerLayout() {
                       className="block px-4 py-3 text-farmer-text hover:bg-farmer-accent/10 font-medium"
                     >
                       <Settings className="w-5 h-5 inline-block mr-2" />
-                      {t('nav.profile')}
+                      Profile Settings
                     </Link>
                     <button
                       onClick={handleSignOut}
                       className="w-full text-left px-4 py-3 text-farmer-text hover:bg-farmer-accent/10 font-medium flex items-center"
                     >
                       <LogOut className="w-5 h-5 inline-block mr-2" />
-                      {t('nav.logout')}
+                      Logout
                     </button>
                   </div>
                 )}

@@ -1,10 +1,12 @@
 // Main App with Routing
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { useEffect, useState } from 'react'
 import Layout from './components/Layout'
 import FarmerLayout from './components/FarmerLayout'
 import BuyerLayout from './components/BuyerLayout'
 import AdminLayout from './components/AdminLayout'
+import LoadingScreen from './components/ui/LoadingScreen'
 
 // Landing + Auth
 import LandingPage from './pages/auth/LandingPage'
@@ -44,53 +46,41 @@ function ProtectedRoute({ children, allowedRoles }) {
   const { user, profile, loading } = useAuth()
   
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
-          <p className="text-gray-500 text-sm font-medium">Loading AgriMart...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading your dashboard..." showConnectionStatus={true} />
   }
   
   if (!user) {
     return <Navigate to="/login" replace />
   }
 
-  // If the user is authenticated but has no profile yet, send them to role selection
-  if (user && !profile) {
-    return <Navigate to="/role-select" replace />
-  }
+  // Determine user role
+  const userRole = profile?.role || (user.email?.includes('farmer') ? 'farmer' : (user.email?.includes('admin') ? 'admin' : 'buyer'))
   
-  if (allowedRoles && !allowedRoles.includes(profile?.role)) {
-    // If role does not match, redirect to appropriate home
-    if (profile?.role === 'farmer') return <Navigate to="/farmer/dashboard" replace />
-    if (profile?.role === 'buyer') return <Navigate to="/buyer/market" replace />
-    if (profile?.role === 'admin') return <Navigate to="/admin/metrics" replace />
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    if (userRole === 'farmer') return <Navigate to="/farmer/dashboard" replace />
+    if (userRole === 'buyer') return <Navigate to="/buyer/market" replace />
+    if (userRole === 'admin') return <Navigate to="/admin/metrics" replace />
     return <Navigate to="/" replace />
   }
   
   return children
 }
 
-// Root redirect: unauthenticated → landing, authenticated → role dashboard
+// Root redirect: unauthenticated → landing, authenticated → role dashboard directly
 function RootRedirect() {
   const { user, profile, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-10 h-10 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
-      </div>
-    )
+    return <LoadingScreen message="Initializing AgriMart..." showConnectionStatus={true} />
   }
 
   if (!user) return <LandingPage />
-  if (!profile) return <Navigate to="/role-select" replace />
-  if (profile.role === 'farmer') return <Navigate to="/farmer/dashboard" replace />
-  if (profile.role === 'buyer') return <Navigate to="/buyer/market" replace />
-  if (profile.role === 'admin') return <Navigate to="/admin/metrics" replace />
+  
+  const userRole = profile?.role || (user.email?.includes('farmer') ? 'farmer' : (user.email?.includes('admin') ? 'admin' : 'buyer'))
+  if (userRole === 'farmer') return <Navigate to="/farmer/dashboard" replace />
+  if (userRole === 'buyer') return <Navigate to="/buyer/market" replace />
+  if (userRole === 'admin') return <Navigate to="/admin/metrics" replace />
+  
   return <LandingPage />
 }
 
